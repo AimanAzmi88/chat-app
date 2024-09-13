@@ -1,90 +1,63 @@
-import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 
-const socket = io('https://chat-app-1cam.onrender.com');
+const socket = io('http://localhost:5000'); // Replace with your server URL
 
-function App() {
+const Chat = () => {
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
-  const [chat, setChat] = useState([]);
-  const [isNameEntered, setIsNameEntered] = useState(false);
+  const [messages, setMessages] = useState([]);
 
-  // Listen for incoming messages and chat history
   useEffect(() => {
-    socket.on('receiveMessage', (msg) => {
-      setChat((prevChat) => [...prevChat, msg]);
+    // Listen for incoming messages
+    socket.on('receiveMessage', (messageData) => {
+      setMessages((prevMessages) => [...prevMessages, messageData]);
     });
 
-    socket.on('chatHistory', (history) => {
-      setChat(history); // Load chat history when the user connects
+    // Fetch initial chat history
+    socket.on('chatHistory', (chatHistory) => {
+      setMessages(chatHistory);
     });
 
+    // Clean up on component unmount
     return () => {
       socket.off('receiveMessage');
       socket.off('chatHistory');
     };
   }, []);
 
-  const submitName = () => {
-    if (name.trim()) {
-      setIsNameEntered(true);
-    }
-  };
-
-  const sendMessage = () => {
-    if (message.trim()) {
-      const messageData = { name, text: message };
-      socket.emit('sendMessage', messageData);
+  const handleSendMessage = () => {
+    if (name && message) {
+      socket.emit('sendMessage', { name, text: message });
       setMessage('');
     }
   };
 
   return (
-    <div className="chat-app p-4 max-w-md mx-auto">
-      {!isNameEntered ? (
-        <div className="name-entry">
-          <h2 className="text-xl font-bold">Enter Your Name</h2>
-          <input
-            type="text"
-            className="border p-2 w-full mb-2"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-          />
-          <button
-            className="bg-blue-500 text-white py-2 px-4 rounded"
-            onClick={submitName}
-          >
-            Join Chat
-          </button>
-        </div>
-      ) : (
-        <div>
-          <h1 className="text-xl font-bold">Chat App</h1>
-          <div className="chat-box border p-4 my-4 h-64 overflow-auto">
-            {chat.map((msg, index) => (
-              <div key={index} className="my-2">
-                <strong>{msg.name}:</strong> {msg.message}
-              </div>
-            ))}
+    <div>
+      <div>
+        <input
+          type="text"
+          placeholder="Your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <textarea
+          placeholder="Type a message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button onClick={handleSendMessage}>Send</button>
+      </div>
+      <div>
+        {messages.map((msg, index) => (
+          <div key={index}>
+            <strong>{msg.name}:</strong> {msg.text}
           </div>
-          <input
-            className="border p-2 w-full mb-2"
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message"
-          />
-          <button
-            className="bg-blue-500 text-white py-2 px-4 rounded"
-            onClick={sendMessage}
-          >
-            Send
-          </button>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
-}
+};
 
-export default App;
+export default Chat;
