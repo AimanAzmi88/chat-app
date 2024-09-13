@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const cors = require('cors'); // Import the cors package
 const { Pool } = require('pg');
 
 // Initialize Express app and HTTP server
@@ -8,10 +9,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: '*', // Allow all origins (you can specify specific origins if needed)
     methods: ['GET', 'POST'],
   },
 });
+
+// Use the cors middleware
+app.use(cors());
 
 // PostgreSQL connection string
 const connectionString = 'postgresql://postgres.xxudsifdeaologsnlyfi:Aiman4588Aiman@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres';
