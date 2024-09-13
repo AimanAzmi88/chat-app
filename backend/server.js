@@ -1,31 +1,23 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const cors = require('cors'); // Import the cors package
 const { Pool } = require('pg');
 
-// Initialize Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*', // Allow all origins (you can specify specific origins if needed)
+    origin: '*',
     methods: ['GET', 'POST'],
   },
 });
 
-// Use the cors middleware
-app.use(cors());
-
-// PostgreSQL connection string
 const connectionString = 'postgresql://postgres.xxudsifdeaologsnlyfi:Aiman4588Aiman@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres';
 
-// Set up PostgreSQL connection
 const pool = new Pool({
   connectionString: connectionString,
 });
 
-// Function to save message to the database
 const saveMessageToDb = async (name, message) => {
   try {
     await pool.query(
@@ -37,7 +29,6 @@ const saveMessageToDb = async (name, message) => {
   }
 };
 
-// Function to fetch all messages from the database
 const getMessagesFromDb = async () => {
   try {
     const res = await pool.query('SELECT name, message FROM messages ORDER BY created_at ASC');
@@ -48,26 +39,27 @@ const getMessagesFromDb = async () => {
   }
 };
 
-io.on('connection', async (socket) => {
-  console.log('A user connected');
+let connectedUsers = 0;
 
-  // Send the chat history to the user on connection
+io.on('connection', async (socket) => {
+  connectedUsers++;
+  io.emit('updateUserCount', connectedUsers);
+
+  console.log('A user connected. Total users:', connectedUsers);
+
   const chatHistory = await getMessagesFromDb();
   socket.emit('chatHistory', chatHistory);
 
-  // Handle incoming messages from clients
   socket.on('sendMessage', async (messageData) => {
     console.log('Message received:', messageData);
-    
-    // Save the message to the database
-    await saveMessageToDb(messageData.name, messageData.text);
-
-    // Broadcast the message to all connected clients
+    await saveMessageToDb(messageData.name, messageData.message);
     io.emit('receiveMessage', messageData);
   });
 
   socket.on('disconnect', () => {
-    console.log('A user disconnected');
+    connectedUsers--;
+    io.emit('updateUserCount', connectedUsers);
+    console.log('A user disconnected. Total users:', connectedUsers);
   });
 });
 

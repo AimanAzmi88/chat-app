@@ -8,9 +8,9 @@ function App() {
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState([]);
   const [isNameEntered, setIsNameEntered] = useState(false);
+  const [userCount, setUserCount] = useState(0);
   const chatEndRef = useRef(null);
 
-  // Listen for incoming messages and chat history
   useEffect(() => {
     socket.on('receiveMessage', (msg) => {
       setChat((prevChat) => [...prevChat, msg]);
@@ -20,14 +20,18 @@ function App() {
       setChat(history); // Load chat history when the user connects
     });
 
+    socket.on('updateUserCount', (count) => {
+      setUserCount(count);
+    });
+
     return () => {
       socket.off('receiveMessage');
       socket.off('chatHistory');
+      socket.off('updateUserCount');
     };
   }, []);
 
   useEffect(() => {
-    // Scroll to the bottom of the chat box
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chat]);
 
@@ -67,13 +71,13 @@ function App() {
       ) : (
         <div>
           <h1 className="text-xl font-bold">Chat App</h1>
+          <p className="text-gray-600 mb-2">Users online: {userCount}</p>
           <div className="chat-box border p-4 my-4 h-64 overflow-auto bg-gray-100">
             {chat.map((msg, index) => (
               <div key={index} className="my-2">
                 <strong className="text-blue-500">{msg.name}:</strong> {msg.message}
               </div>
             ))}
-            {/* Empty div to act as a scroll target */}
             <div ref={chatEndRef} />
           </div>
           <input
