@@ -65,7 +65,7 @@ function App() {
           <div className="chat-box border p-4 my-4 h-64 overflow-auto">
             {chat.map((msg, index) => (
               <div key={index} className="my-2">
-                <strong>{msg.name}:</strong> {msg.message}
+                <strong>{msg.name}:</strong> {msg.text}
               </div>
             ))}
           </div>
