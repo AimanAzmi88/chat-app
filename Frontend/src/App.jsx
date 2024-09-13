@@ -18,6 +18,7 @@ function App() {
 
     socket.on('chatHistory', (history) => {
       setChat(history); // Load chat history when the user connects
+      console.log(history);
     });
 
     return () => {
