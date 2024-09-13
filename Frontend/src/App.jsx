@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io('https://chat-app-1cam.onrender.com:5000');
+const socket = io('https://chat-app-1cam.onrender.com');
 
 function App() {
   const [name, setName] = useState('');
