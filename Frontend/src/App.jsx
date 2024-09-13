@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
 const socket = io('https://chat-app-1cam.onrender.com');
@@ -8,17 +8,16 @@ function App() {
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState([]);
   const [isNameEntered, setIsNameEntered] = useState(false);
+  const chatEndRef = useRef(null);
 
   // Listen for incoming messages and chat history
   useEffect(() => {
     socket.on('receiveMessage', (msg) => {
       setChat((prevChat) => [...prevChat, msg]);
-      console.log(msg);
     });
 
     socket.on('chatHistory', (history) => {
       setChat(history); // Load chat history when the user connects
-      console.log(history);
     });
 
     return () => {
@@ -26,6 +25,11 @@ function App() {
       socket.off('chatHistory');
     };
   }, []);
+
+  useEffect(() => {
+    // Scroll to the bottom of the chat box
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chat]);
 
   const submitName = () => {
     if (name.trim()) {
@@ -35,7 +39,7 @@ function App() {
 
   const sendMessage = () => {
     if (message.trim()) {
-      const messageData = { name, message: message };
+      const messageData = { name, message };
       socket.emit('sendMessage', messageData);
       setMessage('');
     }
@@ -63,12 +67,14 @@ function App() {
       ) : (
         <div>
           <h1 className="text-xl font-bold">Chat App</h1>
-          <div className="chat-box border p-4 my-4 h-64 overflow-auto">
+          <div className="chat-box border p-4 my-4 h-64 overflow-auto bg-gray-100">
             {chat.map((msg, index) => (
               <div key={index} className="my-2">
-                <strong>{msg.name}:</strong> {msg.message}
+                <strong className="text-blue-500">{msg.name}:</strong> {msg.message}
               </div>
             ))}
+            {/* Empty div to act as a scroll target */}
+            <div ref={chatEndRef} />
           </div>
           <input
             className="border p-2 w-full mb-2"
