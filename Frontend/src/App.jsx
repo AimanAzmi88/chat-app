@@ -35,7 +35,7 @@ function App() {
 
   const sendMessage = () => {
     if (message.trim()) {
-      const messageData = { name, text: message };
+      const messageData = { name, message: message };
       socket.emit('sendMessage', messageData);
       setMessage('');
     }
@@ -66,7 +66,7 @@ function App() {
           <div className="chat-box border p-4 my-4 h-64 overflow-auto">
             {chat.map((msg, index) => (
               <div key={index} className="my-2">
-                <strong>{msg.name}:</strong> {msg.text}
+                <strong>{msg.name}:</strong> {msg.message}
               </div>
             ))}
           </div>
