@@ -2,7 +2,7 @@ import { pool } from "../database/connection.js";
 
 export const getMessage = async () => {
     try {
-      const res = await pool.query('SELECT name, message FROM messages ORDER BY created_at ASC');
+      const res = await pool.query('SELECT name, message, created_at FROM messages ORDER BY created_at ASC');
       return res.rows;
     } catch (err) {
       console.error('Error fetching messages from database:', err);
