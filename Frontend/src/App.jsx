@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import Picker from 'emoji-picker-react'; // Ensure this is the correct import
 
-const socket = io('http://localhost:5000');
+// const socket = io('http://localhost:5000');
+const socket = io('https://chat-app-1cam.onrender.com');
 
 function App() {
   const [name, setName] = useState('');
